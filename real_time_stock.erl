@@ -19,5 +19,5 @@ list_to_number(L) ->
     try list_to_float(L)
     catch
         error:badarg ->
-            list_to_integer(L) ;
+            list_to_integer(L)
     end.

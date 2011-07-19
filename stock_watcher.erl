@@ -1,5 +1,5 @@
 -module(stock_watcher).
--export([stock/1,stock/2,watch/3]).
+-export([stock/1,stock/2,watch/5]).
 
 
 stock(NAME) ->
@@ -23,7 +23,7 @@ watch(NAME, PERIOD, HIGHS, LOWS, CLOSES) ->
             BollingerBands = bollinger_bands:calculate(Closes),
 			%timer:sleep(12000),
             %                                                     lists:foldl(fun(X, Sum) ->  math:pow(X - Mean,2) + Sum end, 0, Closes)
-            file_writer:write(NAME, lists:foldl(fun(X, Text) ->  Text++ ","++ float_to_lists(X) end, "", [High,Low,Close,IchimokuCloud,Macd,BollingerBands])),
+            file_writer:write(NAME, lists:foldl(fun(X, Text) ->  Text++ ","++ float_to_list(X) end, "", [High,Low,Close,IchimokuCloud,Macd,BollingerBands])),
             %
 			watch(NAME, PERIOD, Highs, Lows, Closes);
     terminate ->
