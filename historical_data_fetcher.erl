@@ -8,7 +8,7 @@ fetch(Name) ->
 %     - handle for a non-existent stock in the database
 
 fetch(Name, Range) ->
-    Host = {localhost, 27017},
+    Host = {properties:get("databaseURL"), properties:get("databasePort")},
     {ok, Conn} = mongo:connect (Host),
     {ok, Prices} = mongo:do(safe, master, Conn, test, fun () ->
         Stock = hd(mongo:rest(mongo:find(stock, {name, bson:utf8(Name)}))),
