@@ -1,9 +1,12 @@
 -module(properties).
--export([get/1]).
+-export([getProperty/1, getSingleProperty/1]).
 
-get(Property) ->
+getProperty(Property) ->
     Properties = file_reader:read("e:\\temp\\megalodon.properties"),
     findLine(Properties,Property).
+
+getSingleProperty(Property) ->
+    hd(getProperty(Property)).
 
 findLine([],_) ->
     [];
