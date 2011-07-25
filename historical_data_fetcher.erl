@@ -2,6 +2,7 @@
 -export([fetch/1,fetch/2, import/2]).
 -define(DATABASE_URL, "databaseURL").
 -define(DATABASE_PORT, "databasePort").
+-define(TOKENS, ",\n").
 
 fetch(Name) ->
 	fetch(Name, 60).
@@ -27,7 +28,7 @@ getHost() ->
 
 insert(_, _, []) ->  null;
 insert(Name, Conn, [H|T])->
-    Elements = string:tokens(H,",\n"),
+    Elements = string:tokens(H,?TOKENS),
     {ok, Prices} = mongo:do(safe, master, Conn, test, fun () ->
         mongo:insert(stock, {
             name, bson:utf8(Name),
