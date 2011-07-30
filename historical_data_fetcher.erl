@@ -7,15 +7,15 @@
 fetch(Name) ->
 	fetch(Name, 60).
 
-%Todo - handle for a non-existent stock in the database
-
+%Todo - need to be able to specify if I want minutes or if I want day's values
+%Todo - need to be able to pull back data in order of time
 fetch(Name, Range) ->
     {ok, Conn} = mongo:connect (getHost()),
     {ok, Prices} = mongo:do(safe, master, Conn, test, fun () ->
-        StockHistory = mongo:rest(mongo:find(stock, {name, bson:utf8(Name)})),
+        StockHistory = mongo:rest(mongo:find(stock, {name, bson:utf8(Name)},{'_id', 0, close, 1})),
         lists:map (fun (Closing) -> bson:at (close, Closing) end, StockHistory) end),
     mongo:disconnect (Conn),
-	Prices.
+	lists:sublist(Prices, Range).
 
 import(Name, FileName) ->
     Lines = file_reader:read(FileName),
@@ -29,7 +29,7 @@ getHost() ->
 insert(_, _, []) ->  null;
 insert(Name, Conn, [H|T])->
     Elements = string:tokens(H,?TOKENS),
-    {ok, Prices} = mongo:do(safe, master, Conn, test, fun () ->
+    mongo:do(safe, master, Conn, test, fun () ->
         mongo:insert(stock, {
             name, bson:utf8(Name),
             date, bson:utf8(lists:nth(1,Elements)),
