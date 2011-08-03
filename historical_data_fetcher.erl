@@ -12,10 +12,10 @@ fetch(Name) ->
 fetch(Name, Range) ->
     {ok, Conn} = mongo:connect (getHost()),
     {ok, Prices} = mongo:do(safe, master, Conn, test, fun () ->
-        StockHistory = mongo:rest(mongo:find(stock, {name, bson:utf8(Name)},{'_id', 0, close, 1})),
+        StockHistory = mongo:rest(mongo:find(stock, {name, bson:utf8(Name)},{'_id', 0, close, 1}, 0, -1*Range)),
         lists:map (fun (Closing) -> bson:at (close, Closing) end, StockHistory) end),
     mongo:disconnect (Conn),
-	lists:sublist(Prices, Range).
+	Prices.
 
 import(Name, FileName) ->
     Lines = file_reader:read(FileName),
