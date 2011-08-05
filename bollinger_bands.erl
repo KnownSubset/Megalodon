@@ -26,9 +26,9 @@ simpleMovingAverage(Closes, Period)  ->
     lists:foldl(fun(X, Sum) -> X/Period + Sum end, 0, lists:sublist(Closes, Period)).
 
 average(Closes) ->
-    simpleMovingAverage(Closes, lists:length(Closes)).
+    simpleMovingAverage(Closes, length(Closes)).
 
 standardDeviation(Mean, Closes) ->
-    math:sqrt(lists:foldl(fun(X, Sum) ->  math:pow(X - Mean,2) + Sum end, 0, Closes)/lists:len(Closes)).
+    math:sqrt(lists:foldl(fun(X, Sum) ->  math:pow(X - Mean,2) + Sum end, 0, Closes)/length(Closes)).
 standardDeviation(Mean, Closes, Period) ->
     standardDeviation(Mean, lists:sublist(Closes, 20)).

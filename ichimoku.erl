@@ -20,4 +20,4 @@ kumo(Highs, Lows) ->
 	senkou_B(Highs, Lows) - senkou_A(Highs, Lows).
 
 conversionLine(Highs, Lows, Period) ->
-	(lists:max(lists:sublist(Period,Highs)) + lists:min(lists:sublist(Period,Lows)))/2.
+	(lists:max(lists:sublist(Highs,Period)) + lists:min(lists:sublist(Lows,Period)))/2.

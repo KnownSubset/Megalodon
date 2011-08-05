@@ -2,7 +2,8 @@
 -export([fetch/1,fetch/2, import/2]).
 -define(DATABASE_URL, "databaseURL").
 -define(DATABASE_PORT, "databasePort").
--define(TOKENS, ",\n").
+-define(FILE_TOKENS, ",\n").
+-define(DATE_TOKENS, "/").
 
 fetch(Name) ->
 	fetch(Name, 60).
@@ -28,8 +29,8 @@ getHost() ->
 
 insert(_, _, []) ->  null;
 insert(Name, Conn, [H|T])->
-    Elements = string:tokens(H,?TOKENS),
-    DateParts = string:tokens(lists:nth(1,Elements),"/"),
+    Elements = string:tokens(H,?FILE_TOKENS),
+    DateParts = string:tokens(lists:nth(1,Elements),?DATE_TOKENS),
     Year = list_to_number(lists:nth(3,DateParts)),
     Month = list_to_number(lists:nth(1,DateParts)),
     Day = list_to_number(lists:nth(2,DateParts)),

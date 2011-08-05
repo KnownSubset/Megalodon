@@ -41,4 +41,6 @@ macd_test() ->
                      -41.62993677387621,-42.86017750902503,-45.22869338972848,-48.97343362115677,-52.40912537977144,-54.68898040785129,-55.53032003128249,-55.27314940066875,-54.84838159053288],
     Signals = SignalHistory.
 
-
+application:start(mongodb),
+{ok, Conn} = mongo:connect ({localhost, 27017}),
+mongo:do(safe, master, Conn, test, fun () -> mongo:rest(mongo:find(stock, {name, bson:utf8("MSFT")})) end).
