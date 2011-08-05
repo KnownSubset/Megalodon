@@ -1,5 +1,5 @@
 -module(stock_watcher).
--export([stock/1,stock/2,watch/5]).
+-export([stock/1,stock/2,watch/5, watchOnce/5]).
 
 
 stock(NAME) ->
@@ -30,4 +30,3 @@ watch(NAME, PERIOD, HIGHS, LOWS, CLOSES) ->
             ok
     end.
 	
-    
