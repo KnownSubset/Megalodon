@@ -8,12 +8,11 @@
 fetch(Name) ->
 	fetch(Name, 60).
 
-%Todo - need to be able to specify if I want minutes or if I want day's values
-%Todo - need to be able to pull back data in order of time
+%Todo - need to pull out the values that are eod closes, or by minutes out of the whole collection
 fetch(Name, Range) ->
     {ok, Conn} = mongo:connect (getHost()),
     {ok, Prices} = mongo:do(safe, master, Conn, test, fun () ->
-        StockHistory = mongo:rest(mongo:find(stock, {'query',{name, bson:utf8(Name)}, 'orderby', {date,-1}},{'_id', 0, close, 1}, 0, -1*Range)),
+        StockHistory = mongo:rest(mongo:find(stock, {'query',{name, bson:utf8(Name)}, 'orderby', {time,-1}},{'_id', 0, close, 1}, 0, -1*Range)),
         lists:map (fun (Closing) -> bson:at (close, Closing) end, StockHistory) end),
     mongo:disconnect (Conn),
 	Prices.
