@@ -26,6 +26,9 @@ write(Name, High, Low, Close, Volume, Time) ->
 import(Name, FileName) ->
     Lines = file_reader:read(FileName),
     {ok, Conn} = mongo:connect(getHost()),
+    mongo:do(safe, master, Conn, test, fun () ->
+        mongo:delete(stock, {name, bson:utf8(Name)}),
+        mongo:insert(stock, {name, bson:utf8(Name)}) end),
     insert(Name, Conn, Lines),
     mongo:disconnect (Conn).
 
@@ -45,8 +48,8 @@ insert(Name, Conn, [H|T])->
 
 insert(Conn, Name, High, Low, Close, Volume, Time)->
     mongo:do(safe, master, Conn, test, fun () ->
-        mongo:insert(stock,  {name, bson:utf8(Name), time, Time, high, High,
-                              low, Low, close, Close, volume, Volume}) end).
+        mongo:modify(stock, {name, bson:utf8(Name)},
+                            {'$push', {dataPoint, {time, Time, high, High, low, Low, close, Close, volume, Volume}}}) end).
 
 convertDateStringToSeconds(DateString) ->
     DateParts = string:tokens(DateString,?DATE_TOKENS),
