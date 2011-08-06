@@ -1,5 +1,5 @@
--module(historical_data_fetcher).
--export([fetch/1,fetch/2, import/2]).
+-module(historical_data).
+-export([fetch/1,fetch/2, import/2, write/6]).
 -define(DATABASE_URL, "databaseURL").
 -define(DATABASE_PORT, "databasePort").
 -define(FILE_TOKENS, ",\n").
@@ -18,6 +18,11 @@ fetch(Name, Range) ->
     mongo:disconnect (Conn),
 	Prices.
 
+write(Name, High, Low, Close, Volume, Time) ->
+    {ok, Conn} = mongo:connect(getHost()),
+    insert(Conn, Name, High, Low, Close, Volume, Time),
+    mongo:disconnect (Conn).
+
 import(Name, FileName) ->
     Lines = file_reader:read(FileName),
     {ok, Conn} = mongo:connect(getHost()),
@@ -30,22 +35,28 @@ getHost() ->
 insert(_, _, []) ->  null;
 insert(Name, Conn, [H|T])->
     Elements = string:tokens(H,?FILE_TOKENS),
-    DateParts = string:tokens(lists:nth(1,Elements),?DATE_TOKENS),
+    Time =  convertDateStringToSeconds(lists:nth(1,Elements)),
+    High = list_to_number(lists:nth(3,Elements)),
+    Low = list_to_number(lists:nth(4,Elements)),
+    Close = list_to_number(lists:nth(5,Elements)),
+    Volume = list_to_integer(lists:nth(6,Elements)),
+    insert(Conn, Name, High, Low, Close, Volume, Time),
+    insert(Name,Conn, T).
+
+insert(Conn, Name, High, Low, Close, Volume, Time)->
+    mongo:do(safe, master, Conn, test, fun () ->
+        mongo:insert(stock,  {name, bson:utf8(Name), time, Time, high, High,
+                              low, Low, close, Close, volume, Volume}) end).
+
+convertDateStringToSeconds(DateString) ->
+    DateParts = string:tokens(DateString,?DATE_TOKENS),
     Year = list_to_number(lists:nth(3,DateParts)),
     Month = list_to_number(lists:nth(1,DateParts)),
     Day = list_to_number(lists:nth(2,DateParts)),
-    mongo:do(safe, master, Conn, test, fun () ->
-        mongo:insert(stock, {
-            name, bson:utf8(Name),
-            dayOfYear, calendar:date_to_gregorian_days(Year, Month, Day),
-            secondOfDay, calendar:time_to_seconds({16,0,0}),
-            date, {year, Year, month, Month, day, Day, hour, 16, minute, 0, second, 0},
-            open, list_to_number(lists:nth(2,Elements)),
-            high, list_to_number(lists:nth(3,Elements)),
-            low, list_to_number(lists:nth(4,Elements)),
-            close, list_to_number(lists:nth(5,Elements)),
-            volume, list_to_integer(lists:nth(6,Elements))}) end),
-    insert(Name,Conn, T).
+    convertDateToSeconds(Year, Month, Day, 16, 0, 0).
+
+convertDateToSeconds(Year, Month, Day, Hour, Minutes, Seconds) ->
+    bson:secs_to_unixtime(86400 * calendar:date_to_gregorian_days(Year-1970, Month, Day) + calendar:time_to_seconds({Hour,Minutes,Seconds})).
 
 list_to_number(L) ->
     try list_to_float(L)
