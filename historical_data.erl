@@ -20,6 +20,8 @@ fetch(Name, Range) ->
 
 write(Name, High, Low, Close, Volume, Time) ->
     {ok, Conn} = mongo:connect(getHost()),
+    mongo:do(safe, master, Conn, test, fun () ->
+        mongo:delete(stock,  {name, bson:utf8(Name)}) end),
     insert(Conn, Name, High, Low, Close, Volume, Time),
     mongo:disconnect (Conn).
 
