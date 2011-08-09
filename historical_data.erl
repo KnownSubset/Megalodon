@@ -8,7 +8,6 @@
 fetch(Name) ->
 	fetch(Name, 60, minutes).
 
-%Todo - need to pull out the values that are eod closes, or by minutes out of the whole collection
 fetch(Name, Range, minutes) ->
     {{Year,Month,Day},{Hour,Minutes,Seconds}} = erlang:localtime(),
     MarketClosingTime = convertDateToSeconds(Year-1,Month,Day,Hour,Minutes,Seconds),
