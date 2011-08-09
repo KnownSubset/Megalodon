@@ -1,11 +1,11 @@
 -module(stock_manager).
 -export([start/1, spawnStocksWatchers/2]).
+-define(STOCKS, "stocks").
 
 start(File) ->
 	application:start(mongodb),
     inets:start(),
-	odbc:start(),
-	Stocks = properties:get("stocks"),
+	Stocks = properties:get(?STOCKS),
 	manage(spawnStocksWatchers(Stocks, dict:new())).
 
 %need to find the index of Pid in Pids, then find the Stock name that correlates to, respawn that process, and replace the Pid @ index
