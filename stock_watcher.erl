@@ -18,7 +18,7 @@ watch(NAME, PERIOD, HIGHS, LOWS, CLOSES) ->
 			%timer:sleep(12000),
             %                                                     lists:foldl(fun(X, Sum) ->  math:pow(X - Mean,2) + Sum end, 0, Closes)
             file_writer:write(NAME, lists:foldl(fun(X, Text) ->  Text++ ","++ float_to_list(X) end, "", [High,Low,Close,IchimokuCloud,Macd,BollingerBands])),
-            historical_data:write(NAME, High, Low, Close, Volume, erlang:now()),
+            historical_data:write(NAME, High, Low, Close, Volume, erlang:now(), erlang:time()),
             %
 			watch(NAME, PERIOD, Highs, Lows, Closes);
     terminate ->
