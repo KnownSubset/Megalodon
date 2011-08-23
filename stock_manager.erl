@@ -24,6 +24,6 @@ manage(Map) ->
 spawnStocksWatchers([], Map) ->
 	Map;
 spawnStocksWatchers([H|T], Map) ->
-	Pid = spawn_monitor(stock_watcher, watch, [H]),
+	Pid = spawn_monitor(stock_watcher, start, [H]),
 	NewMap = spawnStocksWatchers(T, Map),
     dict:store(Pid, H, NewMap).

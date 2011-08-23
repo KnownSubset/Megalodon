@@ -20,8 +20,8 @@ fetch(Name, Range, days) ->
 fetchPricesAfterTime(Name, Range, Time) ->
     {ok, Conn} = mongo:connect (getHost()),
     {ok, Prices} = mongo:do(safe, master, Conn, test, fun () ->
-        StockHistory = mongo:rest(mongo:find(stock, {'$query',{name, bson:utf8(Name), time, {'$gte', Time }}, '$orderby', {timestamp,1}},{'_id', 0, close, 1}, 0, -1*Range)),
-        lists:map (fun (Closing) -> bson:at (close, Closing) end, StockHistory) end),
+        StockHistory = mongo:rest(mongo:find(stock, {'$query',{name, bson:utf8(Name), time, {'$gte', Time }}, '$orderby', {timestamp,1}},{'_id', 0, high, 1, low, 1, close, 1}, 0, -1*Range)),
+        lists:map (fun (Stock) -> {bson:at (high, Stock),bson:at (low, Stock),bson:at (close, Stock)} end, StockHistory) end),
     mongo:disconnect (Conn),
 	Prices.
 
