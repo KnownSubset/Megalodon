@@ -10,17 +10,17 @@ fetch(Name) ->
 
 fetch(Name, Range, minutes) ->
     {{Year,Month,Day},{Hour,Minutes,Seconds}} = erlang:localtime(),
-    MarketClosingTime = convertDateToSeconds(Year-1,Month,Day,Hour,Minutes,Seconds),
-    fetchPricesAfterMarketClosingTime(Name, Range, MarketClosingTime);
+    Time = convertDateToSeconds(Year-1,Month,Day,Hour,Minutes,Seconds),
+    fetchPricesAfterTime(Name, Range, Time);
 
 fetch(Name, Range, days) ->
     MarketClosingTime = convertDateToSeconds(1970, 1, 1, 16, 0, 0),
-    fetchPricesAfterMarketClosingTime(Name, Range, MarketClosingTime).
+    fetchPricesAfterTime(Name, Range, MarketClosingTime).
 
-fetchPricesAfterMarketClosingTime(Name, Range, MarketClosingTime) ->
+fetchPricesAfterTime(Name, Range, Time) ->
     {ok, Conn} = mongo:connect (getHost()),
     {ok, Prices} = mongo:do(safe, master, Conn, test, fun () ->
-        StockHistory = mongo:rest(mongo:find(stock, {'$query',{name, bson:utf8(Name), time, {'$gte', MarketClosingTime }}, '$orderby', {timestamp,1}},{'_id', 0, close, 1}, 0, -1*Range)),
+        StockHistory = mongo:rest(mongo:find(stock, {'$query',{name, bson:utf8(Name), time, {'$gte', Time }}, '$orderby', {timestamp,1}},{'_id', 0, close, 1}, 0, -1*Range)),
         lists:map (fun (Closing) -> bson:at (close, Closing) end, StockHistory) end),
     mongo:disconnect (Conn),
 	Prices.
