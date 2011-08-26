@@ -35,14 +35,15 @@ import(Name, FileName) ->
     {ok, Conn} = mongo:connect(getHost()),
     mongo:do(safe, master, Conn, test, fun () ->
         mongo:delete(stock,  {name, bson:utf8(Name)}) end),
-    insertRecords(Name, Conn, Lines),
+    insertRecords(Name, Conn, Lines, 1),
     mongo:disconnect (Conn).
 
 getHost() ->
     {properties:getSingleProperty(?DATABASE_URL), list_to_number(properties:getSingleProperty(?DATABASE_PORT))}.
 
-insertRecords(_, _, []) ->  null;
-insertRecords(Name, Conn, [H|T])->
+insertRecords(_, _, [], _) ->  null;
+insertRecords(Name, Conn, [H|T], LineNumber)->
+    io:format("~w ~n", [LineNumber]),
     Elements = string:tokens(H,?FILE_TOKENS),
     Time =  convertDateStringToSeconds(lists:nth(1,Elements)),
     High = list_to_number(lists:nth(3,Elements)),
@@ -50,7 +51,7 @@ insertRecords(Name, Conn, [H|T])->
     Close = list_to_number(lists:nth(5,Elements)),
     Volume = list_to_integer(lists:nth(6,Elements)),
     insert(Conn, Name, High, Low, Close, Volume, Time),
-    insertRecords(Name,Conn, T).
+    insertRecords(Name,Conn, T, LineNumber + 1).
 
 insert(Conn, Name, High, Low, Close, Volume, [Timestamp | Time])->
     mongo:do(safe, master, Conn, test, fun () ->

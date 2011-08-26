@@ -5,7 +5,7 @@ start(Name, Period) ->
     receive
         {From, {start}} ->
             StockHistory = historical_data:fetch(Name, Period, days),
-            {Highs, Lows, Closes} = convert(StockHistory),
+            {Highs, Lows, Closes} = seperateHistorySegments(StockHistory),
             watch(Name, Period, Highs,Lows,Closes);
     terminate ->
         ok
@@ -13,31 +13,43 @@ start(Name, Period) ->
 
 startForDays(Name, Period) ->
     StockHistory = historical_data:fetch(Name, Period, days),
-    {Highs, Lows, Closes} = convert(StockHistory),
-    watch(Name, Period, Highs,Lows,Closes).
+    {Highs, Lows, Closes} = seperateHistorySegments(StockHistory),
+    watchDuringTradingSession(Name, Period, Highs,Lows,Closes, erlang:time()).
 
-watch(NAME, PERIOD, HIGHS, LOWS, CLOSES) ->
-    RealTimeInfo = real_time_stock:price(NAME),
+watchDuringTradingSession(Name, Period, Highs, Lows, Closes, {Hour, Minute, _})  when Hour =< 8, Minute < 30; Hour >= 17, Minute > 1  ->
+    timer:sleep(120000),
+    watchDuringTradingSession(Name, Period, Highs, Lows, Closes, erlang:time());
+watchDuringTradingSession(Name, Period, Highs, Lows, Closes, _) ->
+    {HIGHS, LOWS, CLOSES} = watch(Name, Period, Highs, Lows, Closes),
+    timer:sleep(120000),
+    watchDuringTradingSession(Name, Period, HIGHS, LOWS, CLOSES, erlang:time()).
+
+watch(Name, Period, Highs, Lows, Closes) ->
+    RealTimeInfo = real_time_stock:price(Name),
     High = lists:nth(1,RealTimeInfo),
     Low = lists:nth(2,RealTimeInfo),
     Close = lists:nth(3,RealTimeInfo),
     Volume = lists:nth(4,RealTimeInfo),
-    Highs = [High|HIGHS],
-    Lows = [Low|LOWS],
-    Closes = [Close|CLOSES],
-    {Tenkan, Kijun, Senkou_A, Senkou_B, Kumo} = ichimoku:cloud(Highs, Lows),
-    Macd = macd:calculate(Closes),
-    BollingerBands = bollinger_bands:calculate(Closes)+1,
-    Items = [High ,Low , Close ,Tenkan, Kijun, Senkou_A, Senkou_B, Kumo , Macd , BollingerBands],
-    Words = lists:map (fun (X) -> float_to_list(X) end, Items),
-    file_writer:write(NAME, lists:foldl(fun(X, Text) ->  Text++ ","++ X end, "", Words)),
-    historical_data:write(NAME, High, Low, Close, Volume, erlang:now(), erlang:time()).
-    %timer:sleep(120000),
-    %watch(NAME, PERIOD, Highs, Lows, Closes).
+    {Tenkan, Kijun, Senkou_A, Senkou_B, Kumo} = ichimoku:cloud([High|Highs], [Low|Lows]),
+    Macd = macd:calculate([Close|Closes]),
+    BollingerBands = bollinger_bands:calculate(Period,[Close|Closes]),
+    {{Year, Month, Day}, {Hour, Minute, Second}} = erlang:localtime(),
+    file_writer:write(Name, prepareTextForWriting("~w/~w/~w@~w:~w:~w ",[Year, Month, Day, Hour, Minute, Second])),
+    file_writer:write(Name, prepareTextForWriting("~f, ~f, ~f, ~f, ~f, ~f, ~f, ~f, ~f, ~f~n", [High, Low, Close, Tenkan, Kijun, Senkou_A, Senkou_B, Kumo, Macd, BollingerBands])),
+    historical_data:write(Name, High, Low, Close, Volume, erlang:now(), erlang:time()),
+    {[High|Highs], [Low|Lows], [Close|Closes]}.
 
-convert([]) ->
+seperateHistorySegments([]) ->
     {[], [], []};
-convert([H|T]) ->
+seperateHistorySegments([H|T]) ->
     {High, Low, Close} = H,
-    {Highs, Lows, Closes} = convert(T),
+    {Highs, Lows, Closes} = seperateHistorySegments(T),
     {[High | Highs], [Low | Lows], [Close | Closes]}.
+
+prepareTextForWriting("", _) ->
+    "";
+prepareTextForWriting(Text, []) ->
+    Text;
+prepareTextForWriting(Text, Args) ->
+    lists:flatten(io_lib:format(Text, Args )).
+

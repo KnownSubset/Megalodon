@@ -8,7 +8,7 @@ start(Name) ->
 write(Name, Text) ->
     case file:open(Name, [append]) of
         {ok, FileDescriptor} ->
-            file:write(FileDescriptor, Text++"\n"),
+            file:write(FileDescriptor, Text),
             file:close(FileDescriptor);
         {error, enoent} ->
             donothing
