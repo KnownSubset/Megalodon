@@ -15,6 +15,8 @@ price(Name) ->
     lists:map(fun (X) -> list_to_number(X) end, [High,Low,Last,Volume]).
 
 
+list_to_number([]) ->
+    -1.0;
 list_to_number(L) ->
     try list_to_float(L)
     catch

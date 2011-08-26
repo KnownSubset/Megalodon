@@ -20,8 +20,8 @@ fetch(Name, Range, days) ->
 fetchPricesAfterTime(Name, Range, Time) ->
     {ok, Conn} = mongo:connect (getHost()),
     {ok, Prices} = mongo:do(safe, master, Conn, test, fun () ->
-        StockHistory = mongo:rest(mongo:find(stock, {'$query',{name, bson:utf8(Name), time, {'$gte', Time }}, '$orderby', {timestamp,1}},{'_id', 0, close, 1}, 0, -1*Range)),
-        lists:map (fun (Closing) -> bson:at (close, Closing) end, StockHistory) end),
+        StockHistory = mongo:rest(mongo:find(stock, {'$query',{name, bson:utf8(Name), time, {'$gte', Time }}, '$orderby', {timestamp,1}},{'_id', 0, high, 1, low, 1, close, 1}, 0, -1*Range)),
+        lists:map (fun (Stock) -> {bson:at (high, Stock),bson:at (low, Stock),bson:at (close, Stock)} end, StockHistory) end),
     mongo:disconnect (Conn),
 	Prices.
 
@@ -35,14 +35,15 @@ import(Name, FileName) ->
     {ok, Conn} = mongo:connect(getHost()),
     mongo:do(safe, master, Conn, test, fun () ->
         mongo:delete(stock,  {name, bson:utf8(Name)}) end),
-    insertRecords(Name, Conn, Lines),
+    insertRecords(Name, Conn, Lines, 1),
     mongo:disconnect (Conn).
 
 getHost() ->
     {properties:getSingleProperty(?DATABASE_URL), list_to_number(properties:getSingleProperty(?DATABASE_PORT))}.
 
-insertRecords(_, _, []) ->  null;
-insertRecords(Name, Conn, [H|T])->
+insertRecords(_, _, [], _) ->  null;
+insertRecords(Name, Conn, [H|T], LineNumber)->
+    io:format("~w ~n", [LineNumber]),
     Elements = string:tokens(H,?FILE_TOKENS),
     Time =  convertDateStringToSeconds(lists:nth(1,Elements)),
     High = list_to_number(lists:nth(3,Elements)),
@@ -50,7 +51,7 @@ insertRecords(Name, Conn, [H|T])->
     Close = list_to_number(lists:nth(5,Elements)),
     Volume = list_to_integer(lists:nth(6,Elements)),
     insert(Conn, Name, High, Low, Close, Volume, Time),
-    insertRecords(Name,Conn, T).
+    insertRecords(Name,Conn, T, LineNumber + 1).
 
 insert(Conn, Name, High, Low, Close, Volume, [Timestamp | Time])->
     mongo:do(safe, master, Conn, test, fun () ->

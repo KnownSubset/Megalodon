@@ -7,7 +7,7 @@ cloud(Highs, Lows) ->
     Senkou_A = (Tenkan + Kijun) / 2,
     Senkou_B = senkou_B(Highs, Lows),
     Kumo = Senkou_B - Senkou_A,
-    [Tenkan, Kijun, Senkou_A, Senkou_B, Kumo].
+    {Tenkan, Kijun, Senkou_A, Senkou_B, Kumo}.
 tenkan(Highs, Lows) ->
 	conversionLine(Highs, Lows, 9).
 kijun(Highs, Lows) ->
