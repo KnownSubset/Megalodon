@@ -18,12 +18,19 @@ fetch(Name, Range, days) ->
     fetchPricesAfterTime(Name, Range, MarketClosingTime).
 
 fetchPricesAfterTime(Name, Range, Time) ->
-    {ok, Conn} = mongo:connect (getHost()),
-    {ok, Prices} = mongo:do(safe, master, Conn, test, fun () ->
-        StockHistory = mongo:rest(mongo:find(stock, {'$query',{name, bson:utf8(Name), time, {'$gte', Time }}, '$orderby', {timestamp,1}},{'_id', 0, high, 1, low, 1, close, 1}, 0, -1*Range)),
-        lists:map (fun (Stock) -> {bson:at (high, Stock),bson:at (low, Stock),bson:at (close, Stock)} end, StockHistory) end),
-    mongo:disconnect (Conn),
-	Prices.
+    case mongo:connect (getHost()) of
+        {ok, Conn} ->
+            {ok, Prices} = mongo:do(safe, master, Conn, test, fun () ->
+                StockHistory = mongo:rest(mongo:find(stock, {'$query',{name, bson:utf8(Name), time, {'$gte', Time }}, '$orderby', {timestamp,1}},{'_id', 0, high, 1, low, 1, close, 1}, 0, -1*Range)),
+                lists:map (fun (Stock) -> {bson:at (high, Stock),bson:at (low, Stock),bson:at (close, Stock)} end, StockHistory) end),
+            mongo:disconnect (Conn),
+            {ok, Prices};
+        {error,econnrefused} ->
+            io:format("Database is not started! Failing process!!~n"),
+            log:log("Database is not started! Failing process!!"),
+            {error, []}
+    end.
+
 
 write(Name, High, Low, Close, Volume, Timestamp, Time) ->
     {ok, Conn} = mongo:connect(getHost()),
