@@ -1,9 +1,8 @@
 -module(file_writer).
--export([start/1, write/2]).
+-export([write/2, writeFormattedText/2]).
 
-start(Name) ->
-    Name.
-%Todo: Need to test out file paths and ensure that is working or decide where the location of the files will be stored
+writeFormattedText(Name, {Format, Args})->
+    write(Name, prepareTextForWriting(Format, Args)).
 
 write(Name, Text) ->
     case file:open(Name, [append]) of
@@ -13,3 +12,10 @@ write(Name, Text) ->
         {error, enoent} ->
             donothing
     end.
+
+prepareTextForWriting("", _) ->
+    "";
+prepareTextForWriting(Text, []) ->
+    Text;
+prepareTextForWriting(Text, Args) ->
+    lists:flatten(io_lib:format(Text, Args )).

@@ -6,7 +6,8 @@ price() ->
 price("YHOO").
 
 price(Name) ->
-    {ok, {{Version, 200, ReasonPhrase}, Headers, Body}} = httpc:request("http://www.google.com/ig/api?stock="++Name),
+    log:log("Retrieving "++Name++" stock price"),
+    {ok, {{_, 200, _}, _, Body}} = httpc:request("http://www.google.com/ig/api?stock="++Name),
     {Doc, _}=xmerl_scan:string(Body),
     [#xmlAttribute{value=High}]=xmerl_xpath:string("//high/@data", Doc),
     [#xmlAttribute{value=Low}]=xmerl_xpath:string("//low/@data", Doc),
