@@ -2,3 +2,4 @@
 *.iml
 todos
 *.beam
+priv/log/*
