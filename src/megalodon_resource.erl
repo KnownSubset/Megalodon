@@ -22,7 +22,10 @@ content_types_provided(ReqData, State) ->
     {[{"application/json", to_json}], ReqData, State}.
 
 to_json(ReqData, State) ->
-    ID = wrq:path_info(id, ReqData),
-    JsonDoc = mochijson2:encode({struct, [{one, 1}, {lizt,[1,2,3]}]}),
+    Period = wrq:path_info(period, ReqData),
+    Stock = wrq:path_info(stock, ReqData),
+    JsonDoc = mochijson2:encode({struct, [{period, list_to_binary(Period)}, 
+					  {stock, list_to_binary(Stock)}
+					 ]}),
     {JsonDoc, ReqData, State}.
 
