@@ -3,3 +3,5 @@
 todos
 *.beam
 priv/log/*
+deps/*
+ebin/*
