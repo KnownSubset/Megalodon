@@ -11,6 +11,6 @@ test() ->
 properties_test() ->
     Stocks = ["MSFT","GOOG","YHOO","AAPL"],
     Stocks = properties:getProperty("stocks"),
-    ["localhost"] = properties:getSingleProperty("databaseURL"),
-    ["27017"] = properties:getSingleProperty("databasePort").
+    "localhost" = properties:getSingleProperty("databaseURL"),
+    "27017" = properties:getSingleProperty("databasePort").
 
