@@ -9,8 +9,8 @@ test() ->
         [fun properties_test/0]}).
 
 properties_test() ->
-    Stocks = ["MSFT", "GOOG"],
-    Stocks = properties:get("stocks"),
-    ["localhost"] = properties:get("databaseURL"),
-    ["27017"] = properties:get("databasePort").
+    Stocks = ["MSFT","GOOG","YHOO","AAPL"],
+    Stocks = properties:getProperty("stocks"),
+    ["localhost"] = properties:getSingleProperty("databaseURL"),
+    ["27017"] = properties:getSingleProperty("databasePort").
 

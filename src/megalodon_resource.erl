@@ -7,7 +7,8 @@
          allowed_methods/2,
          content_types_provided/2,
          content_types_accepted/2,
-         to_json/2]).
+         to_json/2,
+	 to_html/2]).
 -include_lib("webmachine/include/webmachine.hrl").
 -record(ichimoki, {tenkan, kijun, senkou_a, senkou_b, kumo}).
 -record(indicators, {name, highs=[], lows=[], closes=[], ichimoki=#ichimoki{}, macd=[], bollinger=[]}).
@@ -37,6 +38,9 @@ retrieve_data_for(Stock, Period) ->
     BollingerBands = bollinger_bands:calculate(Period,Closes),
     Ichimoki = #ichimoki{tenkan=Tenkan, kijun=Kijun, senkou_a=Senkou_A, senkou_b=Senkou_B, kumo=Kumo},
     #indicators{name=Stock, highs=Highs, lows=Lows, closes=Closes, ichimoki=Ichimoki, macd=Macd, bollinger=BollingerBands}.
-    %{Highs, Lows, Closes, BollingerBands, {Tenkan, Kijun, Senkou_A, Senkou_B, Kumo}, Macd}.  
+    %{Highs, Lows, Closes, BollingerBands, {Tenkan, Kijun, Senkou_A, Senkou_B, Kumo}, Macd}. 
+
+to_html(ReqData, State) ->
+    {"<html><body>Hello, new world</body></html>", ReqData, State}. 
 
 
