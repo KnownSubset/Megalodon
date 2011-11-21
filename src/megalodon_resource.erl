@@ -13,7 +13,9 @@
 -record(ichimoki, {tenkan, kijun, senkou_a, senkou_b, kumo}).
 -record(indicators, {name, highs=[], lows=[], closes=[], ichimoki=#ichimoki{}, macd=[], bollinger=[]}).
 
-init([]) -> {ok, undefined}.
+init([]) ->
+    stock_manager:start(),
+    {ok, undefined}.
 
 allowed_methods(ReqData, State) ->
     {['GET'], ReqData, State}.
@@ -25,14 +27,14 @@ content_types_provided(ReqData, State) ->
     {[{"application/json", to_json}], ReqData, State}.
 
 to_json(ReqData, State) ->
-    Period = wrq:path_info(period, ReqData),
+    Period = list_to_atom(wrq:path_info(period, ReqData)),
     Stock = wrq:path_info(stock, ReqData),
     Indicators = retrieve_data_for(Stock,Period),
     JsonDoc = mochijson2:encode({struct, [{indicators, Indicators}]}),
     {JsonDoc, ReqData, State}.
 
 retrieve_data_for(Stock, Period) ->
-    {Highs, Lows, Closes}= historical_data:fetch(Stock, 60, days),
+    {Highs, Lows, Closes}= historical_data:fetch(Stock, 60, Period),
     {Tenkan, Kijun, Senkou_A, Senkou_B, Kumo} = ichimoku:cloud(Highs, Lows),
     Macd = macd:calculate(Closes),
     BollingerBands = bollinger_bands:calculate(Period,Closes),
