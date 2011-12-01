@@ -8,6 +8,7 @@
          content_types_provided/2,
          content_types_accepted/2,
          to_json/2,
+         retrieve_data_for/2,
 	 to_html/2]).
 -include_lib("webmachine/include/webmachine.hrl").
 -record(ichimoki, {tenkan, kijun, senkou_a, senkou_b, kumo}).
