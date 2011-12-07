@@ -9,15 +9,13 @@ fetch(Name) ->
 	fetch(Name, 60, minutes).
 
 fetch(Name, Range, minutes) ->
-    {{Year,Month,Day},{Hour,Minutes,Seconds}} = erlang:localtime(),
-    Time = convertDateToSeconds(Year-1,Month,Day,Hour,Minutes,Seconds),
-    fetchPricesAfterTime(Name, Range, Time);
+    fetchPricesAfterTime(Name, Range, 0);
 
 fetch(Name, Range, days) ->
     io:format("Line 17!!~n"),
     MarketClosingTime = convertDateToSeconds(1970, 1, 1, 16, 0, 0),
     io:format("Line 19!!~n"),
-    fetchPricesAfterTime(Name, Range, MarketClosingTime).
+    fetchPricesAfterTime(Name, Range, calendar:time_to_seconds({16,0,0})).
 
 fetchPricesAfterTime(Name, Range, Time) ->
     io:format("Line 23!!~n"),

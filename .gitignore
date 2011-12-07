@@ -5,3 +5,5 @@ todos
 priv/log/*
 deps/*
 ebin/*
+*~
+*.log
