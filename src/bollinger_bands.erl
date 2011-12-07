@@ -1,11 +1,11 @@
 -module(bollinger_bands).
--export([calculate/1, calculate/2, simpleMovingAverage/1, simpleMovingAverage/2]).
+-export([calculate/1, calculate/2, simple_moving_average/1, simple_moving_average/2]).
 
 calculate() ->
     receive
         {From, {Period, Closes}} ->
-			Middle = simpleMovingAverage(Closes, Period),
-            Delta =  2 * standardDeviation(simpleMovingAverage(Closes, 20), Closes, 20),
+			Middle = simple_moving_average(Closes, Period),
+            Delta =  2 * standard_deviation(simple_moving_average(Closes, 20), Closes, 20),
             Upper = Middle + Delta,
             Lower = Middle - Delta;
     terminate ->
@@ -15,20 +15,20 @@ calculate() ->
 calculate(Closes) ->
 	calculate(20, Closes).
 calculate(Period, Closes) ->
-	Middle = simpleMovingAverage(Closes, Period),
-    Delta =  2 * standardDeviation(simpleMovingAverage(Closes, Period), Closes, Period),
+	Middle = simple_moving_average(Closes, Period),
+    Delta =  2 * standard_deviation(simple_moving_average(Closes, Period), Closes, Period),
     Upper = Middle + Delta,
     Lower = Middle - Delta.
 
-simpleMovingAverage(Closes) ->
-    simpleMovingAverage(Closes, 10).
-simpleMovingAverage(Closes, Period)  ->
+simple_moving_average(Closes) ->
+    simple_moving_average(Closes, 10).
+simple_moving_average(Closes, Period)  ->
     lists:foldl(fun(X, Sum) -> X/Period + Sum end, 0, lists:sublist(Closes, Period)).
 
 average(Closes) ->
-    simpleMovingAverage(Closes, length(Closes)).
+    simple_moving_average(Closes, length(Closes)).
 
-standardDeviation(Mean, Closes) ->
+standard_deviation(Mean, Closes) ->
     math:sqrt(lists:foldl(fun(X, Sum) ->  math:pow(X - Mean,2) + Sum end, 0, Closes)/length(Closes)).
-standardDeviation(Mean, Closes, Period) ->
-    standardDeviation(Mean, lists:sublist(Closes, 20)).
+standard_deviation(Mean, Closes, Period) ->
+    standard_deviation(Mean, lists:sublist(Closes, 20)).

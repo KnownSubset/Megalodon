@@ -12,13 +12,10 @@ fetch(Name, Range, minutes) ->
     fetchPricesAfterTime(Name, Range, 0);
 
 fetch(Name, Range, days) ->
-    io:format("Line 17!!~n"),
     MarketClosingTime = convertDateToSeconds(1970, 1, 1, 16, 0, 0),
-    io:format("Line 19!!~n"),
     fetchPricesAfterTime(Name, Range, calendar:time_to_seconds({16,0,0})).
 
 fetchPricesAfterTime(Name, Range, Time) ->
-    io:format("Line 23!!~n"),
     case mongo:connect (getHost()) of
         {ok, Conn} ->
             {ok, Prices} = mongo:do(safe, master, Conn, test, fun () ->
