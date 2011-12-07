@@ -22,10 +22,10 @@ fetchPricesAfterTime(Name, Range, Time) ->
     case mongo:connect (getHost()) of
         {ok, Conn} ->
             {ok, Prices} = mongo:do(safe, master, Conn, test, fun () ->
-                StockHistory = mongo:rest(mongo:find(stock, {'$query',{name, bson:utf8(Name), seconds, {'$gte', Time }}, '$orderby', {timestamp,1}},{'_id', 0, high, 1, low, 1, close, 1}, 0, -1*Range)),
+                StockHistory = mongo:rest(mongo:find(stock, {'$query',{name, bson:utf8(Name), seconds, {'$gte', Time }}, '$orderby', {timestamp,-1}},{'_id', 0, high, 1, low, 1, close, 1}, 0, -1*Range)),
                 lists:map (fun (Stock) -> {bson:at (high, Stock),bson:at (low, Stock),bson:at (close, Stock)} end, StockHistory) end),
             mongo:disconnect (Conn),
-            {ok, Prices};
+            {ok, lists:reverse(Prices)};
         {error,econnrefused} ->
             io:format("Database is not started! Failing process!!~n"),
             log:log("Database is not started! Failing process!!"),
