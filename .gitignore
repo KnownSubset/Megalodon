@@ -1,3 +1,9 @@
 .idea/*
 *.iml
 todos
+*.beam
+priv/log/*
+deps/*
+ebin/*
+*~
+*.log

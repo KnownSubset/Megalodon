@@ -2,7 +2,7 @@
 -export([getProperty/1, getSingleProperty/1]).
 
 getProperty(Property) ->
-    Properties = file_reader:read("e:\\temp\\megalodon.properties"),
+    Properties = file_reader:read("./properties/megalodon.properties"),
     findLine(Properties,Property).
 
 getSingleProperty(Property) ->

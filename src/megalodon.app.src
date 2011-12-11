@@ -1,0 +1,18 @@
+%%-*- mode: erlang -*-
+{application, megalodon,
+ [
+  {description, "megalodon"},
+  {vsn, "1"},
+  {modules, []},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  inets,
+                  crypto,
+                  mochiweb,
+                  webmachine
+                 ]},
+  {mod, { megalodon_app, []}},
+  {env, []}
+ ]}.

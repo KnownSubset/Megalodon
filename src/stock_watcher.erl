@@ -50,8 +50,8 @@ watch(Name, Period, Highs, Lows, Closes) ->
     Macd = macd:calculate([Close|Closes]),
     BollingerBands = bollinger_bands:calculate(Period,[Close|Closes]),
     {{Year, Month, Day}, {Hour, Minute, Second}} = erlang:localtime(),
-    file_writer:writeFormattedText(Name, {?TIME_FORMAT,[Year, Month, Day, Hour, Minute, Second]}),
-    file_writer:writeFormattedText(Name, {?VALUES_FORMAT, [High, Low, Close, Tenkan, Kijun, Senkou_A, Senkou_B, Kumo, Macd, BollingerBands]}),
+    file_writer:writeFormattedText(Name++".log", {?TIME_FORMAT,[Year, Month, Day, Hour, Minute, Second]}),
+    file_writer:writeFormattedText(Name++".log", {?VALUES_FORMAT, [High, Low, Close, Tenkan, Kijun, Senkou_A, Senkou_B, Kumo, Macd, BollingerBands]}),
     historical_data:write(Name, High, Low, Close, Volume, erlang:now(), calendar:time_to_seconds(erlang:time())),
     {[High|Highs], [Low|Lows], [Close|Closes]}.
 

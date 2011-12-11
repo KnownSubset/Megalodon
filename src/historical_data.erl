@@ -9,22 +9,20 @@ fetch(Name) ->
 	fetch(Name, 60, minutes).
 
 fetch(Name, Range, minutes) ->
-    {{Year,Month,Day},{Hour,Minutes,Seconds}} = erlang:localtime(),
-    Time = convertDateToSeconds(Year-1,Month,Day,Hour,Minutes,Seconds),
-    fetchPricesAfterTime(Name, Range, Time);
+    fetchPricesAfterTime(Name, Range, 0);
 
 fetch(Name, Range, days) ->
     MarketClosingTime = convertDateToSeconds(1970, 1, 1, 16, 0, 0),
-    fetchPricesAfterTime(Name, Range, MarketClosingTime).
+    fetchPricesAfterTime(Name, Range, calendar:time_to_seconds({16,0,0})).
 
 fetchPricesAfterTime(Name, Range, Time) ->
     case mongo:connect (getHost()) of
         {ok, Conn} ->
             {ok, Prices} = mongo:do(safe, master, Conn, test, fun () ->
-                StockHistory = mongo:rest(mongo:find(stock, {'$query',{name, bson:utf8(Name), time, {'$gte', Time }}, '$orderby', {timestamp,1}},{'_id', 0, high, 1, low, 1, close, 1}, 0, -1*Range)),
+                StockHistory = mongo:rest(mongo:find(stock, {'$query',{name, bson:utf8(Name), seconds, {'$gte', Time }}, '$orderby', {timestamp,-1}},{'_id', 0, high, 1, low, 1, close, 1}, 0, -1*Range)),
                 lists:map (fun (Stock) -> {bson:at (high, Stock),bson:at (low, Stock),bson:at (close, Stock)} end, StockHistory) end),
             mongo:disconnect (Conn),
-            {ok, Prices};
+            {ok, lists:reverse(Prices)};
         {error,econnrefused} ->
             io:format("Database is not started! Failing process!!~n"),
             log:log("Database is not started! Failing process!!"),
@@ -62,7 +60,7 @@ insertRecords(Name, Conn, [H|T], LineNumber)->
 
 insert(Conn, Name, High, Low, Close, Volume, [Timestamp | Time])->
     mongo:do(safe, master, Conn, test, fun () ->
-        mongo:insert(stock,  {name, bson:utf8(Name),timestamp, Timestamp, time, Time, high, High,
+        mongo:insert(stock,  {name, bson:utf8(Name),timestamp, Timestamp, seconds, Time, high, High,
                               low, Low, close, Close, volume, Volume}) end).
 
 convertDateStringToSeconds(DateString) ->

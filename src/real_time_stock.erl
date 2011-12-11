@@ -1,6 +1,6 @@
 -module(real_time_stock).
 -export([price/0,price/1]).
--include("C:\\Program Files (x86)\\erl5.8.3\\lib\\xmerl-1.2.8\\include\\xmerl.hrl").
+-include("../include/xmerl.hrl").
 
 price() ->
 price("YHOO").
